@@ -1,3 +1,10 @@
+<a href="https://devkraken.com/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/header-dark.png">
+    <img alt="Header Image" src="images/header-light.png">
+  </picture>
+</a>
+
 # EnvValidator
 
 > Environment variables validation for Laravel and PHP applications
