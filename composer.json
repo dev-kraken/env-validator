@@ -1,0 +1,80 @@
+{
+  "name": "dev-kraken/env-validator",
+  "description": "Type-safe environment variable validation for Laravel and PHP applications with intelligent presets and extensible rule objects",
+  "type": "library",
+  "license": "MIT",
+  "homepage": "https://github.com/dev-kraken/env-validator",
+  "support": {
+    "issues": "https://github.com/dev-kraken/env-validator/issues",
+    "source": "https://github.com/dev-kraken/env-validator",
+    "docs": "https://github.com/dev-kraken/env-validator#readme"
+  },
+  "keywords": [
+    "laravel",
+    "php",
+    "env",
+    "environment",
+    "validator",
+    "validation",
+    "dotenv",
+    "configuration",
+    "type-safe",
+    "microservices",
+    "production"
+  ],
+  "authors": [
+    {
+      "name": "Dev Kraken",
+      "email": "soman@devkraken.com"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "vlucas/phpdotenv": "^5.4"
+  },
+  "require-dev": {
+    "pestphp/pest": "^2.0|^3.0",
+    "pestphp/pest-plugin-laravel": "^2.2|^3.0",
+    "orchestra/testbench": "^9.0|^10.0",
+    "laravel/framework": "^11.0|^12.0",
+    "phpstan/phpstan": "^2.1",
+    "laravel/pint": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "EnvValidator\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "EnvValidator\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "EnvValidator\\EnvValidatorServiceProvider"
+      ],
+      "aliases": {
+        "EnvValidator": "EnvValidator\\Facades\\EnvValidator"
+      }
+    }
+  },
+  "scripts": {
+    "test": "vendor/bin/pest",
+    "analyse": "vendor/bin/phpstan analyse",
+    "cs": "vendor/bin/pint --test",
+    "cs:fix": "vendor/bin/pint",
+    "check": [
+      "@test",
+      "@analyse",
+      "@cs"
+    ]
+  },
+  "minimum-stability": "stable",
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
+}

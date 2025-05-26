@@ -1,0 +1,36 @@
+* text=auto eol=lf
+
+# Export ignore - exclude from package distribution
+/.github export-ignore
+/tests export-ignore
+/examples export-ignore
+/docs export-ignore
+/images export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.editorconfig export-ignore
+/pint.json export-ignore
+/phpstan.neon export-ignore
+/phpunit.xml export-ignore
+/RELEASE_CHECKLIST.md export-ignore
+
+# Language detection
+*.php linguist-language=PHP
+composer.json linguist-language=JSON
+*.md linguist-documentation
+
+# Line ending normalization
+*.php text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
