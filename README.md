@@ -36,6 +36,12 @@ EnvValidator is a modern, type-safe PHP package for validating environment varia
 composer require dev-kraken/env-validator
 ```
 
+You can publish the configuration file with:
+
+```bash
+php artisan vendor:publish --provider="EnvValidator\EnvValidatorServiceProvider" --tag="config"
+```
+
 ### Laravel Usage
 
 ```php
