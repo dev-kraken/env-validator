@@ -16,13 +16,14 @@
 [![PHP Version](https://img.shields.io/packagist/php-v/dev-kraken/env-validator.svg?style=flat-square)](https://packagist.org/packages/dev-kraken/env-validator)
 [![Tests](https://img.shields.io/github/actions/workflow/status/dev-kraken/env-validator/ci.yml?branch=main&label=tests&style=flat-square)](https://github.com/dev-kraken/env-validator/actions)
 
-EnvValidator is a modern, type-safe PHP package for validating environment variables in Laravel and standalone PHP applications. It provides robust validation with clear error messages, intelligent presets, and extensible rule objects.
+EnvValidator is a modern, type-safe PHP package for validating environment variables in Laravel and standalone PHP applications. It provides robust validation with clear error messages, intelligent presets, extensible rule objects, and automatic environment file synchronization.
 
 ## :sparkles: Features
 
 -   :lock: **Type-safe validation** with PHP 8.2+ and PHPStan level max
 -   :dart: **Smart presets** for common scenarios (Laravel, microservices, production, etc.)
 -   :jigsaw: **Extensible rule system** with custom Rule objects
+-   :arrows_counterclockwise: **Environment sync** to keep `.env` and `.env.example` synchronized
 -   :rocket: **Laravel integration** with auto-discovery and Artisan commands
 -   :package: **Standalone support** for non-Laravel PHP applications
 -   :shield: **Production-ready** with comprehensive test coverage
@@ -58,8 +59,41 @@ EnvValidator::useApiRules()->validate();
 
 ### Standalone PHP Usage
 
+#### Basic Example (String Rules)
+
 ```php
 use EnvValidator\EnvValidator;
+
+// Simple validation with string rules
+$rules = [
+    'APP_ENV' => 'required|string',
+    'APP_DEBUG' => 'required|boolean',
+    'APP_URL' => 'required|url',
+    'DB_HOST' => 'required|string',
+    'DB_PASSWORD' => 'required|string',
+];
+
+$result = EnvValidator::validateStandalone($_ENV, $rules);
+
+if ($result !== true) {
+    echo "❌ Environment validation failed:\n";
+    foreach ($result as $field => $errors) {
+        foreach ($errors as $error) {
+            echo "  • $error\n";
+        }
+    }
+    exit(1);
+}
+
+echo "✅ Environment validation passed!\n";
+```
+
+#### Advanced Example (Rule Objects)
+
+```php
+use EnvValidator\EnvValidator;
+use EnvValidator\Collections\StringRules\{InRule, BooleanRule};
+use EnvValidator\Collections\NetworkRules\UrlRule;
 
 $validator = new EnvValidator();
 $validator->setRules([
@@ -68,8 +102,52 @@ $validator->setRules([
     'APP_URL' => ['required', new UrlRule()],
 ]);
 
-$validator->validate($_ENV);
+// For standalone PHP, use validateStandalone method
+$result = EnvValidator::validateStandalone($_ENV, $validator->getRules());
+
+if ($result !== true) {
+    // Handle validation errors
+    foreach ($result as $field => $errors) {
+        foreach ($errors as $error) {
+            echo "Error: $error\n";
+        }
+    }
+    exit(1);
+}
+
+echo "✅ Environment validation passed!\n";
 ```
+
+### Required Field Validation
+
+EnvValidator properly handles required field validation in both Laravel and standalone PHP environments:
+
+```php
+// All these formats work for required validation
+$rules = [
+    'APP_KEY' => ['required', 'string', 'min:32'],        // Array format (recommended)
+    'APP_ENV' => 'required|string',                       // String format
+    'DB_PASSWORD' => ['required'],                        // Required only
+    'API_URL' => ['string', 'required', new UrlRule()],  // Required anywhere in array
+];
+
+// Standalone validation
+$result = EnvValidator::validateStandalone($_ENV, $rules);
+
+if ($result !== true) {
+    // Handle validation errors
+    foreach ($result as $field => $errors) {
+        echo "Error in $field: " . implode(', ', $errors) . "\n";
+    }
+}
+```
+
+Required fields fail validation when they are:
+
+-   ❌ **Missing** from the environment
+-   ❌ **Empty strings** (`''`)
+-   ❌ **Null values**
+-   ✅ **Present with valid values**
 
 ## :clipboard: Built-in Rule Presets
 
@@ -208,6 +286,261 @@ php artisan env:validate --keys=APP_KEY --keys=APP_URL
 php artisan env:validate -v
 ```
 
+## :arrows_counterclockwise: Environment File Synchronization
+
+Keep your `.env` and `.env.example` files synchronized automatically! This feature helps prevent deployment issues when developers add new environment variables but forget to update the example file.
+
+### :mag: Check Synchronization Status
+
+```bash
+# Check if .env and .env.example are synchronized
+php artisan env:sync --check
+```
+
+**Sample Output:**
+
+```
+🔍 Checking environment file synchronization...
+
+⚠️  3 key(s) missing in .env.example, 1 extra key(s) in .env.example
+
+📊 Statistics:
+   • .env keys: 15
+   • .env.example keys: 13
+
+🔍 Missing in .env.example:
+   📂 Sensitive:
+      • STRIPE_SECRET = ********
+   📂 Third party:
+      • STRIPE_PUBLIC_KEY = pk_test_1234...
+   📂 Application:
+      • FEATURE_FLAG_NEW_UI = true
+
+🗑️  Extra in .env.example:
+   • LEGACY_API_KEY
+
+💡 Suggestions:
+   • Add missing keys to .env.example
+   • Remove unused keys from .env.example
+```
+
+### :gear: Synchronization Commands
+
+```bash
+# Automatically synchronize files (with confirmation)
+php artisan env:sync
+
+# Force sync without confirmation
+php artisan env:sync --force
+
+# Add keys with empty values (security-conscious)
+php artisan env:sync --no-values
+
+# Remove extra keys from .env.example
+php artisan env:sync --remove-extra
+
+# Use custom file paths
+php artisan env:sync --env-path=/custom/.env --example-path=/custom/.env.example
+```
+
+### :shield: Security Features
+
+The sync command automatically handles sensitive data:
+
+-   **Sensitive keys** (PASSWORD, SECRET, KEY, TOKEN) get **empty values**
+-   **URLs** become `https://example.com`
+-   **Email addresses** become `user@example.com`
+-   **Boolean values** are standardized to `true`
+-   **Numeric values** (ports, timeouts) are preserved
+-   **Environment names** get appropriate defaults (`production`)
+
+### :building_construction: Integration with CI/CD
+
+Add environment sync checks to your deployment pipeline:
+
+```bash
+# In your CI/CD pipeline
+php artisan env:sync --check
+if [ $? -ne 0 ]; then
+    echo "❌ Environment files are out of sync!"
+    echo "Run 'php artisan env:sync' to fix."
+    exit 1
+fi
+```
+
+### :computer: Programmatic Usage
+
+```php
+use EnvValidator\Services\EnvExampleSyncService;
+use EnvValidator\Facades\EnvSync;
+
+// Using the facade
+$report = EnvSync::getSyncReport();
+if ($report['status'] !== 'synced') {
+    // Handle out-of-sync files
+    $result = EnvSync::syncToExample(['generate_values' => true]);
+}
+
+// Using the service directly
+$syncService = new EnvExampleSyncService();
+$report = $syncService->getSyncReport();
+
+// Check specific conditions
+if ($syncService->envFileExists() && !$syncService->exampleFileExists()) {
+    // Create .env.example from .env
+    $syncService->syncToExample(['generate_values' => true]);
+}
+
+// Get validation rule suggestions for new keys
+$comparison = $syncService->compareFiles();
+$suggestedRules = $syncService->suggestValidationRules(
+    $comparison['missing_in_example']
+);
+```
+
+### :computer: Standalone PHP Usage
+
+The environment sync feature works perfectly in standalone PHP applications (without Laravel):
+
+```php
+use EnvValidator\Services\EnvExampleSyncService;
+
+// IMPORTANT: Always provide explicit paths in standalone PHP
+$syncService = new EnvExampleSyncService(
+    __DIR__ . '/.env',           // Path to your .env file
+    __DIR__ . '/.env.example'    // Path to your .env.example file
+);
+
+// Check synchronization status
+$report = $syncService->getSyncReport();
+if ($report['status'] !== 'synced') {
+    echo "⚠️  Environment files are out of sync!\n";
+
+    // Show what's missing
+    foreach ($report['missing_in_example'] as $category => $keys) {
+        echo "Missing {$category} keys: " . implode(', ', array_keys($keys)) . "\n";
+    }
+
+    // Auto-sync files
+    $result = $syncService->syncToExample([
+        'add_missing' => true,
+        'remove_extra' => true,
+        'generate_values' => true
+    ]);
+
+    if ($result['success']) {
+        echo "✅ Files synchronized successfully!\n";
+    }
+}
+
+// Integration with validation
+$rules = [
+    'APP_ENV' => 'required|string',
+    'DB_HOST' => 'required|string',
+    'API_KEY' => 'required|string|min:10',
+];
+
+$validationResult = EnvValidator::validateStandalone($_ENV, $rules);
+if ($validationResult !== true) {
+    // Handle validation errors
+    foreach ($validationResult as $field => $errors) {
+        echo "Error in {$field}: " . implode(', ', $errors) . "\n";
+    }
+}
+```
+
+#### Different Project Structures
+
+```php
+// Current directory
+$syncService = new EnvExampleSyncService(
+    getcwd() . '/.env',
+    getcwd() . '/.env.example'
+);
+
+// Config directory
+$syncService = new EnvExampleSyncService(
+    getcwd() . '/config/.env',
+    getcwd() . '/config/.env.example'
+);
+
+// Absolute paths
+$syncService = new EnvExampleSyncService(
+    '/var/www/app/.env',
+    '/var/www/app/.env.example'
+);
+
+// Custom file names
+$syncService = new EnvExampleSyncService(
+    getcwd() . '/environment.conf',
+    getcwd() . '/environment.example.conf'
+);
+```
+
+#### Deployment Script Integration
+
+```php
+#!/usr/bin/env php
+<?php
+// deployment.php
+require_once 'vendor/autoload.php';
+
+use EnvValidator\Services\EnvExampleSyncService;
+use EnvValidator\EnvValidator;
+
+echo "🚀 Deployment: Environment Check\n";
+
+// 1. Check environment sync
+$syncService = new EnvExampleSyncService(__DIR__ . '/.env', __DIR__ . '/.env.example');
+$report = $syncService->getSyncReport();
+
+if ($report['status'] !== 'synced') {
+    echo "❌ ERROR: Environment files are out of sync!\n";
+    echo "Missing keys: " . count($report['missing_in_example'] ?? []) . "\n";
+    echo "Extra keys: " . count($report['extra_in_example'] ?? []) . "\n";
+    exit(1);
+}
+
+// 2. Validate environment
+$rules = [
+    'APP_ENV' => 'required|string',
+    'DB_HOST' => 'required|string',
+    'API_KEY' => 'required|string|min:32',
+];
+
+$result = EnvValidator::validateStandalone($_ENV, $rules);
+if ($result !== true) {
+    echo "❌ ERROR: Environment validation failed!\n";
+    foreach ($result as $field => $errors) {
+        echo "  • {$field}: " . implode(', ', $errors) . "\n";
+    }
+    exit(1);
+}
+
+echo "✅ Environment check passed - ready for deployment!\n";
+```
+
+### :bulb: Best Practices
+
+#### Laravel Projects
+
+1. **Before Deployments**: Always run `php artisan env:sync --check`
+2. **In Development**: Use `php artisan env:sync` when adding new variables
+3. **Team Workflow**:
+    - Add new variables to `.env`
+    - Run `php artisan env:sync`
+    - Commit both `.env.example` and updated validation rules
+4. **CI/CD Integration**: Fail builds if files are out of sync
+5. **Security**: Use `--no-values` flag for highly sensitive projects
+
+#### Standalone PHP Projects
+
+1. **Always specify absolute paths**: Use `__DIR__` or `getcwd()` for reliable paths
+2. **Check file existence**: Use `$syncService->envFileExists()` before operations
+3. **Handle errors gracefully**: Always check `$result['success']` before proceeding
+4. **Integrate with deployment**: Add sync checks to your deployment scripts
+5. **Combine with validation**: Use sync + validation for complete environment safety
+
 ### Service Provider Configuration
 
 ```php
@@ -271,6 +604,15 @@ composer check
 
 ## :book: Examples
 
+The `examples/` directory contains comprehensive examples demonstrating various use cases:
+
+-   **`comprehensive_examples.php`** - Complete feature showcase with presets and rule objects
+-   **`required_field_examples.php`** - Detailed required field validation examples
+-   **`env_sync_examples.php`** - Environment file synchronization demonstrations (Laravel)
+-   **`standalone_env_sync_examples.php`** - Environment sync for standalone PHP applications
+-   **`preset_examples.php`** - Preset system demonstrations
+-   **`rule_objects_demo.php`** - Rule object usage and benefits
+
 ### Real-World Scenarios
 
 ```php
@@ -298,6 +640,25 @@ $rules = match(env('APP_ENV')) {
     'testing' => DefaultRulePresets::minimal(),
     default => DefaultRulePresets::laravel(),
 };
+```
+
+### Running Examples
+
+```bash
+# Run comprehensive examples
+php examples/comprehensive_examples.php
+
+# Explore required field validation
+php examples/required_field_examples.php
+
+# Environment file synchronization demos (Laravel)
+php examples/env_sync_examples.php
+
+# Standalone PHP environment sync demos
+php examples/standalone_env_sync_examples.php
+
+# See preset system in action
+php examples/preset_examples.php
 ```
 
 ## :handshake: Contributing

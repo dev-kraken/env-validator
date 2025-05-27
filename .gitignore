@@ -7,3 +7,6 @@
 /.idea/
 *.swp
 *.swo
+*.env
+*.env.example
+.DS_Store

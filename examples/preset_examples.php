@@ -4,7 +4,7 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 use EnvValidator\EnvValidator;
 
-echo ":dart: EnvValidator Preset Examples\n";
+echo ">>  EnvValidator Preset Examples\n";
 echo "==============================\n\n";
 
 // Example 1: Default Full Laravel Rules
@@ -38,7 +38,7 @@ echo '   Includes: '.implode(', ', array_keys($rules))."\n\n";
 // Example 5: Using Preset by Name
 echo "5. Using Preset by Name:\n";
 $validator = (new EnvValidator)->usePreset('minimal');
-echo "   Minimal preset loaded successfully :white_check_mark:\n\n";
+echo "   Minimal preset loaded successfully [✓]\n\n";
 
 // Example 6: Chaining Presets with Custom Rules
 echo "6. Chaining Presets with Custom Rules:\n";
@@ -66,9 +66,9 @@ $minimalEnv = [
 ];
 try {
     $result = $minimalValidator->validate($minimalEnv);
-    echo "   :white_check_mark: Minimal validation passed\n";
+    echo "   [✓] Minimal validation passed\n";
 } catch (Exception $e) {
-    echo '   :x: Minimal validation failed: '.$e->getMessage()."\n";
+    echo '   [✗] Minimal validation failed: '.$e->getMessage()."\n";
 }
 
 // Production validation
@@ -86,9 +86,9 @@ $productionEnv = [
 ];
 try {
     $result = $productionValidator->validate($productionEnv);
-    echo "   :white_check_mark: Production validation passed\n";
+    echo "   [✓] Production validation passed\n";
 } catch (Exception $e) {
-    echo '   :x: Production validation failed: '.$e->getMessage()."\n";
+    echo '   [✗] Production validation failed: '.$e->getMessage()."\n";
 }
 
 // API validation
@@ -104,38 +104,38 @@ $apiEnv = [
 ];
 try {
     $result = $apiValidator->validate($apiEnv);
-    echo "   :white_check_mark: API validation passed\n";
+    echo "   [✓] API validation passed\n";
 } catch (Exception $e) {
-    echo '   :x: API validation failed: '.$e->getMessage()."\n";
+    echo '   [✗] API validation failed: '.$e->getMessage()."\n";
 }
 
 echo "\n";
 
 // Example 8: Real-world Scenarios
 echo "8. Real-world Scenario Examples:\n";
-echo "   :iphone: Mobile Backend API:\n";
+echo "   [*] Mobile Backend API:\n";
 $mobileApiValidator = (new EnvValidator)
     ->useApiRules()
     ->addRule('FIREBASE_PROJECT_ID', 'required|string')
     ->addRule('PUSH_NOTIFICATION_KEY', 'required|string|min:20')
     ->addRule('APP_VERSION_MIN', 'required|string');
 
-echo "   :bar_chart: Analytics Microservice:\n";
+echo "   [*] Analytics Microservice:\n";
 $analyticsValidator = (new EnvValidator)
     ->useMinimalRules()
     ->addRule('ANALYTICS_DB_HOST', 'required|string')
     ->addRule('BATCH_SIZE', 'required|integer|min:100|max:10000')
     ->addRule('RETENTION_DAYS', 'required|integer|min:30|max:3650');
 
-echo "   :globe_with_meridians: Web Application:\n";
+echo "   [*] Web Application:\n";
 $webAppValidator = (new EnvValidator)
     ->useProductionRules()
     ->addRule('CDN_URL', 'required|url')
     ->addRule('SOCIAL_LOGIN_ENABLED', 'required|in:true,false')
     ->addRule('MAINTENANCE_MODE', 'required|in:true,false');
 
-echo "   :white_check_mark: All scenario validators configured successfully\n\n";
+echo "   [✓] All scenario validators configured successfully\n\n";
 
-echo ":tada: All preset examples completed successfully!\n";
+echo ">>  All preset examples completed successfully!\n";
 echo "   Total test scenarios: 8\n";
-echo "   All validations passed :white_check_mark:\n";
+echo "   All validations passed [✓]\n";

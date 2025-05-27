@@ -122,9 +122,18 @@ final class StandaloneValidator
      */
     private function isRequiredAndMissing(mixed $rule, array $env, string $key): bool
     {
-        return is_string($rule)
-            && str_contains($rule, 'required')
-            && (! isset($env[$key]) || $env[$key] === '');
+        $isRequired = false;
+
+        // Check if the rule contains 'required'
+        if (is_string($rule)) {
+            $isRequired = str_contains($rule, 'required');
+        } elseif (is_array($rule)) {
+            // Check if 'required' is in the array of rules
+            $isRequired = in_array('required', $rule, true);
+        }
+
+        // Return true if required and the key is missing or empty
+        return $isRequired && (! isset($env[$key]) || $env[$key] === '');
     }
 
     /**

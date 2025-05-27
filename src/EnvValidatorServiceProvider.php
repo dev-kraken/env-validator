@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace EnvValidator;
 
+use EnvValidator\Console\EnvSyncCommand;
 use EnvValidator\Console\ValidateEnvCommand;
 use EnvValidator\Core\RuleRegistry;
 use EnvValidator\Exceptions\InvalidEnvironmentException;
+use EnvValidator\Services\EnvExampleSyncService;
 use EnvValidator\Support\RuleFactory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
@@ -42,6 +44,11 @@ class EnvValidatorServiceProvider extends ServiceProvider
         $this->app->singleton('env-validator', function ($app) {
             return new EnvValidator;
         });
+
+        // Register the sync service
+        $this->app->singleton(EnvExampleSyncService::class, function ($app) {
+            return new EnvExampleSyncService;
+        });
     }
 
     /**
@@ -58,6 +65,7 @@ class EnvValidatorServiceProvider extends ServiceProvider
 
             $this->commands([
                 ValidateEnvCommand::class,
+                EnvSyncCommand::class,
             ]);
         }
 

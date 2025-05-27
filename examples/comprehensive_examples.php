@@ -12,7 +12,7 @@ use EnvValidator\Core\AbstractRule;
 use EnvValidator\Core\DefaultRulePresets;
 use EnvValidator\EnvValidator;
 
-echo ":rocket: EnvValidator Comprehensive Examples\n";
+echo ">>  EnvValidator Comprehensive Examples\n";
 echo "=====================================\n\n";
 
 // 1. Basic Usage with Rule Objects
@@ -44,12 +44,12 @@ try {
     // Use standalone validation to avoid Laravel facade issues
     $result = EnvValidator::validateStandalone($sampleEnv, $validator->getRules());
     if ($result === true) {
-        echo "   :white_check_mark: Validation passed!\n\n";
+        echo "   [✓] Validation passed!\n\n";
     } else {
-        echo "   :x: Validation failed with errors\n\n";
+        echo "   [✗] Validation failed with errors\n\n";
     }
 } catch (Exception $e) {
-    echo "   :x: Validation failed: {$e->getMessage()}\n\n";
+    echo "   [✗] Validation failed: {$e->getMessage()}\n\n";
 }
 
 // 2. Preset System Examples
@@ -107,7 +107,7 @@ $advancedValidator->setRules([
     ],
 ]);
 
-echo "   :white_check_mark: Advanced rules configured\n\n";
+echo "   [✓] Advanced rules configured\n\n";
 
 // 4. Real-World Application Examples
 echo "4. Real-World Application Examples:\n\n";
@@ -228,7 +228,7 @@ $customValidator->setRules([
     'INTERNAL_API_KEY' => ['required', new ApiKeyRule('ik_', 32)],
 ]);
 
-echo "   :white_check_mark: Custom API key rules created\n\n";
+echo "   [✓] Custom API key rules created\n\n";
 
 // 7. Error Handling Examples
 echo "7. Error Handling Examples:\n";
@@ -259,10 +259,10 @@ try {
             }
         }
     } else {
-        echo "   :white_check_mark: No validation errors found\n";
+        echo "   [✓] No validation errors found\n";
     }
 } catch (Exception $e) {
-    echo "   :x: Validation error: {$e->getMessage()}\n";
+    echo "   [✗] Validation error: {$e->getMessage()}\n";
 }
 
 echo "\n";
@@ -275,7 +275,7 @@ echo "   Optimized validation strategies\n\n";
 $criticalValidator = new EnvValidator;
 $criticalValidator->setRules(DefaultRulePresets::minimal());
 
-echo "   :white_check_mark: Critical validation (4 rules) - Fast boot time\n";
+echo "   [✓] Critical validation (4 rules) - Fast boot time\n";
 
 // Full validation for deployment checks
 $deploymentValidator = new EnvValidator;
@@ -286,9 +286,9 @@ $deploymentValidator->setRules(array_merge(
     DefaultRulePresets::mail()
 ));
 
-echo '   :white_check_mark: Deployment validation ('.count($deploymentValidator->getRules())." rules) - Comprehensive checks\n";
+echo '   [✓] Deployment validation ('.count($deploymentValidator->getRules())." rules) - Comprehensive checks\n";
 
-echo "\n:tada: Comprehensive Examples Complete!\n";
-echo "   :white_check_mark: All validation patterns demonstrated\n";
-echo "   :white_check_mark: Production-ready configurations shown\n";
-echo "   :white_check_mark: Best practices highlighted\n";
+echo "\n>>  Comprehensive Examples Complete!\n";
+echo "   [✓] All validation patterns demonstrated\n";
+echo "   [✓] Production-ready configurations shown\n";
+echo "   [✓] Best practices highlighted\n";
